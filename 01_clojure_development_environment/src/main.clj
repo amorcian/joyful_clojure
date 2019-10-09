@@ -1,6 +1,6 @@
 (ns main)
 
-(def my-name "Daniel King")
+(def my-name "Andrea Morciano")
 
 (defn hello-message
   [name]

@@ -1,5 +1,7 @@
 (ns main
-  (:require [clojure.string :as string]))
+  (:require [clojure.string :as string])
+  (:require [clojure.repl :refer :all]))
+
 
 (defn add-7
   [num]
@@ -93,16 +95,33 @@
   (get-full-name {:first-name \"Daniel\" :last-name \"King\"})
   -> \"Daniel King\""
   [user]
-  ;; TODO
-  )
+  (str
+    (get user :first-name)
+    " "
+    (get user :last-name)))
+
+
 
 (defn get-ids
   "Given a vector of users, returns a list of the users' ids.
 
   Bonus points: Try doing this with loop/recur and with map."
   [users]
-  ;; TODO
-  )
+  (map (fn [user] (get user :id)) users))
+
+(defn get-ids-1
+  "Given a vector of users, returns a list of the users' ids.
+
+  Bonus points: Try doing this with loop/recur and with map."
+  [users]
+  (loop [remaining users
+         result '()]
+    (if (empty? remaining)
+      result
+      (recur
+        (rest remaining)
+        (cons (get (first remaining) :id) result)))))
+
 
 (defn http-handler
   "Given an http request, returns the response that should be
@@ -121,8 +140,18 @@
   Any other request should result in a 404 response
   with the text \"Not found\" in the body."
   [req]
+  (let [requests #{{:method :GET :url "/hello"}
+                   {:method :GET :url "/goodbye"}}
+         responses {"/hello" "Hello world"
+                    "/goodbye" "Goodbye world"}
+         statuses {:ok 200
+                   :not-found 404}
+         not-found "Not found"]
+    (if (contains? requests req)
+       {:status (get statuses :ok) :body (get responses (get req :url))}
+       {:status (get statuses :not-found) :body not-found})))
   ;; TODO
-  )
+
 
 (defn total-of-positives
   "Gets the sum of a sequence of numbers. Non-positive numbers
@@ -132,8 +161,9 @@
   (total-of-positives [1 5 -10 3 -2])
   -> 9"
   [nums]
+  (apply + (filter (fn [n] (> n 0)) nums)))
   ;; TODO
-  )
+
 
 (defn is-palindrome
   "Determines whether or not a given string is a palindrome.
@@ -143,8 +173,10 @@
   (is-palindrome \"abcba\") -> true
   Challenge: (is-palindrome \"Taco Cat\") -> true"
   [str]
-  ;; TODO
-  )
+  (let [str' (string/lower-case (string/replace str " " ""))
+        str'' (string/reverse str')]
+    (= str' str'')))
+
 
 (defn caesar-encrypt
   "Takes a word and a number, and rotates each letter in the word
@@ -158,5 +190,9 @@
   Note: The name of the function comes from the fact that this transformation
   is known as a Caesar Cipher."
   [word num-places]
-  ;; TODO
-  )
+  (apply str (map
+               (fn [c] (let [fst (if (Character/isUpperCase c)
+                                   \A
+                                   \a)]
+                         (char (+ (mod (- (+ (int c) num-places) (int fst)) 26) (int fst)))))
+               word)))
